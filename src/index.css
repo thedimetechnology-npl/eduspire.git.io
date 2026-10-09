@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---- Eduspire identity: midnight navy, electric blue, aqua teal ---- */
+  --color-ink: #10285F;
+  --color-ink-light: #1C4A9A;
+  --color-ink-dark: #071638;
+
+  --color-gold: #18B6B6;
+  --color-gold-light: #74E3DE;
+  --color-gold-dark: #087F9D;
+  --color-gold-soft: #DDF7F6;
+
+  --color-emerald: #0C9F8E;
+  --color-emerald-soft: #DDF6F0;
+
+  --color-paper: #F3F8FC;
+  --color-surface: #FFFFFF;
+
+  --color-text: #1B2436;
+  --color-muted: #6B7280;
+  --color-muted-light: #9AA1AF;
+
+  --color-border: #DCE8F2;
+  --color-border-strong: #B9CCDE;
+
+  --color-danger: #C4453B;
+  --color-danger-soft: #FBEAE8;
+
+  /* ---- Typography ---- */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --shadow-card: 0 1px 2px rgba(16, 40, 95, 0.04), 0 12px 28px -12px rgba(16, 40, 95, 0.18);
+  --shadow-card-hover: 0 8px 20px rgba(16, 40, 95, 0.08), 0 22px 44px -16px rgba(16, 40, 95, 0.24);
+  --shadow-pop: 0 16px 40px -12px rgba(16, 40, 95, 0.28);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-paper);
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(221,247,246,0.28));
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+  ::selection {
+    background-color: var(--color-gold-light);
+    color: var(--color-ink);
+  }
+  button, a, input, textarea, select {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 3px solid rgba(24, 182, 182, 0.35);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-strong);
+    border-radius: 999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}
+
+@keyframes brand-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.brand-gradient {
+  background: linear-gradient(110deg, #18B6B6, #1684D8, #10285F, #18B6B6);
+  background-size: 240% 100%;
+  animation: brand-shimmer 10s ease-in-out infinite;
+}
+.brand-wordmark {
+  letter-spacing: -0.055em;
+}

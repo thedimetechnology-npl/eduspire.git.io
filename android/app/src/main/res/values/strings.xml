@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Eduspire</string>
+    <string name="title_activity_main">Eduspire</string>
+    <string name="package_name">com.edusphere.pro</string>
+    <string name="custom_url_scheme">com.edusphere.pro</string>
+</resources>
