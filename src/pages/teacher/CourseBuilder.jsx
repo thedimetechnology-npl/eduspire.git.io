@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Plus, GripVertical, Trash2, Save, ArrowLeft } from "lucide-react";
+import { Plus, GripVertical, Trash2, Save, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import client from "../../api/client";
 // REMOVED: import { DashboardLayout } from "../../components/layout/DashboardLayout";
 import { Card, Button, Input, Textarea, Select, Badge } from "../../components/ui/Kit";
@@ -24,6 +24,8 @@ export default function CourseBuilder() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
+  const [courseStatus, setCourseStatus] = useState("draft");
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     client.get("/categories").then(({ data }) => setCategories(data));
@@ -31,6 +33,7 @@ export default function CourseBuilder() {
       client.get(`/courses/${id}`).then(({ data }) => {
         setCourse({ title: data.title, description: data.description || "", category_id: data.category_id || "", price: data.price, level: data.level });
         setLessons(data.lessons);
+        setCourseStatus(data.status || "draft");
       });
     }
   }, [id, isEdit]);
@@ -65,7 +68,24 @@ export default function CourseBuilder() {
     }
     const { data } = await client.get(`/courses/${courseId}`);
     setLessons(data.lessons);
+    setCourseStatus(data.status || courseStatus);
     setLessonModal(null);
+  };
+
+  const togglePublish = async () => {
+    if (!courseId || publishing) return;
+    setPublishing(true);
+    setError("");
+    try {
+      const { data } = await client.patch(`/courses/${courseId}/publish`, null, {
+        params: { publish: courseStatus !== "published" },
+      });
+      setCourseStatus(data.status);
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setPublishing(false);
+    }
   };
 
   const uploadVideo = async (file) => {
@@ -97,7 +117,33 @@ export default function CourseBuilder() {
         <ArrowLeft className="w-4 h-4" /> Back to courses
       </button>
 
-      <h1 className="font-display text-2xl font-semibold text-ink mb-6">{isEdit ? "Edit course" : "Create a new course"}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <h1 className="font-display text-2xl font-semibold text-ink">{isEdit ? "Edit course" : "Create a new course"}</h1>
+        {courseId && (
+          <div className="flex items-center gap-2">
+            <Badge variant={courseStatus === "published" ? "emerald" : "neutral"}>
+              {courseStatus === "published" ? "Published" : "Draft"}
+            </Badge>
+            <Button
+              size="sm"
+              variant={courseStatus === "published" ? "outline" : "primary"}
+              loading={publishing}
+              icon={courseStatus === "published" ? EyeOff : Eye}
+              onClick={togglePublish}
+            >
+              {courseStatus === "published" ? "Unpublish" : "Publish course"}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {courseId && courseStatus !== "published" && (
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          This course is a <b>draft</b> — students cannot see it yet. Click <b>Publish course</b> when it&apos;s ready.
+        </div>
+      )}
+
+      {error && <p className="text-sm text-danger bg-danger-soft rounded-lg px-3 py-2 mb-4">{error}</p>}
 
       <div className="flex gap-2 mb-6">
         <TabButton active={tab === "details"} onClick={() => setTab("details")}>Course details</TabButton>
@@ -123,7 +169,6 @@ export default function CourseBuilder() {
               </Select>
             </div>
             <Input label="Price (USD, 0 for free)" type="number" min="0" step="0.01" value={course.price} onChange={(e) => setCourse({ ...course, price: e.target.value })} />
-            {error && <p className="text-sm text-danger bg-danger-soft rounded-lg px-3 py-2">{error}</p>}
             <Button type="submit" loading={saving} icon={Save}>{courseId ? "Save details" : "Create & continue"}</Button>
           </form>
         </Card>
