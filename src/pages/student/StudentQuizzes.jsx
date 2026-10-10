@@ -19,6 +19,7 @@ export default function StudentQuizzes() {
   const [starting, setStarting] = useState(null);
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     client.get("/my-courses")
@@ -37,11 +38,15 @@ export default function StudentQuizzes() {
 
   const startAttempt = async (quiz) => {
     setStarting(quiz.id);
+    setError(null);
     try {
       const { data } = await client.post(`/quizzes/${quiz.id}/attempt`);
       navigate(`/student/quizzes/${quiz.id}/attempt/${data.attempt_id}`, {
-        state: { quiz: data.quiz },
+        state: { quiz: data.quiz, resumed: data.resumed, secondsLeft: data.seconds_left },
       });
+    } catch (err) {
+      const msg = err?.response?.data?.detail || "Could not start the quiz. Please try again.";
+      setError(typeof msg === "string" ? msg : "Could not start the quiz. Please try again.");
     } finally {
       setStarting(null);
     }
@@ -163,6 +168,16 @@ export default function StudentQuizzes() {
               </div>
             </div>
           </div>
+
+          {/* Error banner */}
+          {error && (
+            <div className="mb-5 flex items-start justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <span>{error}</span>
+              <button onClick={() => setError(null)} className="font-semibold hover:underline shrink-0">
+                Dismiss
+              </button>
+            </div>
+          )}
 
           {/* Tabs + Search */}
           <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-gray-100 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.15)] p-2 mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

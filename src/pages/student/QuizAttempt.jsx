@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Clock, CheckCircle2, Trophy, ArrowLeft } from "lucide-react";
 import client from "../../api/client";
@@ -11,22 +11,39 @@ export default function QuizAttempt() {
   const quiz = location.state?.quiz;
 
   const [answers, setAnswers] = useState({});
-  const [secondsLeft, setSecondsLeft] = useState(quiz ? quiz.duration_minutes * 60 : 0);
+  const [secondsLeft, setSecondsLeft] = useState(() => {
+    const fromState = location.state?.secondsLeft;
+    if (Number.isFinite(fromState) && fromState > 0) return fromState;
+    return quiz ? quiz.duration_minutes * 60 : 0;
+  });
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const autoSubmitted = useRef(false);
 
   const submit = useCallback(async () => {
     if (submitting || result) return;
     setSubmitting(true);
-    const { data } = await client.post(`/quizzes/attempt/${attemptId}/submit`, { answers });
-    setResult(data);
-    setSubmitting(false);
+    setError(null);
+    try {
+      const { data } = await client.post(`/quizzes/attempt/${attemptId}/submit`, { answers });
+      setResult(data);
+    } catch (err) {
+      const msg = err?.response?.data?.detail || "Failed to submit the quiz. Please try again.";
+      setError(typeof msg === "string" ? msg : "Failed to submit the quiz. Please try again.");
+      setSecondsLeft((s) => Math.max(s, 5));
+    } finally {
+      setSubmitting(false);
+    }
   }, [answers, attemptId, submitting, result]);
 
   useEffect(() => {
     if (!quiz || result) return;
     if (secondsLeft <= 0) {
-      submit();
+      if (!autoSubmitted.current) {
+        autoSubmitted.current = true;
+        submit();
+      }
       return;
     }
     const t = setInterval(() => setSecondsLeft((s) => s - 1), 1000);
@@ -102,6 +119,12 @@ export default function QuizAttempt() {
           </Card>
         ))}
       </div>
+
+      {error && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       <Button className="w-full mt-6" size="lg" loading={submitting} onClick={submit}>
         Submit quiz
