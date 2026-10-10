@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     # AI / Anthropic
     ANTHROPIC_API_KEY: Optional[str] = None
 
+    # Seed
+    SEED_PASSWORD: str = "Dime@edu2026"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
