@@ -94,6 +94,7 @@ export default function CoursePlayer() {
   }
 
   return (
+    <>
       <Link
         to={`/course/${id}`}
         className="flex items-center gap-1.5 text-sm text-muted hover:text-ink mb-4 w-fit"
@@ -235,5 +236,6 @@ export default function CoursePlayer() {
           </div>
         </Card>
       </div>
+    </>
   );
 }

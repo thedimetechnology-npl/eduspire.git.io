@@ -1,1 +1,0 @@
-import{R as e}from"./index-CpJ6KIJv.js";var t=async t=>{let{data:n}=await e.post(`/payments/create`,t);return n},n=async t=>{let{data:n}=await e.post(`/payments/verify`,{order_id:t});return n};export{n,t};

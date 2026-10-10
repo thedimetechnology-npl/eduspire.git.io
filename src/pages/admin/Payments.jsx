@@ -22,6 +22,7 @@ export default function Payments() {
     .reduce((sum, p) => sum + Number(p.amount), 0);
 
   return (
+    <>
       <Card className="mb-6 flex items-center gap-4">
         <div className="w-11 h-11 rounded-xl bg-gold-soft text-gold-dark flex items-center justify-center"><Receipt className="w-5 h-5" /></div>
         <div>
@@ -55,5 +56,6 @@ export default function Payments() {
           ))}
         </Card>
       )}
+    </>
   );
 }

@@ -34,6 +34,7 @@ export default function ManageUsers() {
   const users = result?.items ?? null;
 
   return (
+    <>
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="flex gap-2">
           <TabButton active={tab === "student"} onClick={() => setTab("student")}>Students</TabButton>
@@ -78,6 +79,7 @@ export default function ManageUsers() {
           <Pagination page={result.page} totalPages={result.total_pages} total={result.total} onPageChange={setPage} />
         </>
       )}
+    </>
   );
 }
 

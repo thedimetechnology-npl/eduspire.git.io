@@ -61,6 +61,7 @@ export default function QuizAttempt() {
   }
 
   return (
+    <>
       <div className="flex items-center justify-between mb-6">
         <button onClick={() => navigate("/student/quizzes")} className="flex items-center gap-1.5 text-sm text-muted hover:text-ink">
           <ArrowLeft className="w-4 h-4" /> Exit quiz
@@ -105,5 +106,6 @@ export default function QuizAttempt() {
       <Button className="w-full mt-6" size="lg" loading={submitting} onClick={submit}>
         Submit quiz
       </Button>
+    </>
   );
 }

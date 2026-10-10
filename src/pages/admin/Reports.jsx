@@ -28,6 +28,7 @@ export default function Reports() {
   }, []);
 
   return (
+    <>
       <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-thin pb-1">
         {TABS.map((t) => (
           <button
@@ -116,5 +117,6 @@ export default function Reports() {
           </Card>
         )
       )}
+    </>
   );
 }

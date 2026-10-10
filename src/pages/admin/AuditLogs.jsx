@@ -24,6 +24,7 @@ export default function AuditLogs() {
   const logs = result?.items ?? null;
 
   return (
+    <>
       <div className="relative max-w-sm mb-6">
         <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
@@ -56,5 +57,6 @@ export default function AuditLogs() {
           <Pagination page={result.page} totalPages={result.total_pages} total={result.total} onPageChange={setPage} />
         </>
       )}
+    </>
   );
 }

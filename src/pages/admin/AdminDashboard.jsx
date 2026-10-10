@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   if (!data) return <Spinner />;
 
   return (
+    <>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard icon={Users} label="Students" value={data.total_students} accent="ink" />
         <StatCard icon={Users} label="Teachers" value={data.total_teachers} accent="gold" />
@@ -29,5 +30,6 @@ export default function AdminDashboard() {
       </div>
 
       <ChartCard title="Top courses by enrollment" data={data.top_courses} />
+    </>
   );
 }

@@ -45,6 +45,7 @@ export default function Categories() {
   if (!categories) return <Spinner />;
 
   return (
+    <>
       <div className="flex justify-end mb-6">
         <Button icon={Plus} onClick={() => setOpen(true)}>New category</Button>
       </div>
@@ -76,5 +77,6 @@ export default function Categories() {
           <Button type="submit" className="w-full" loading={saving}>Create category</Button>
         </form>
       </Modal>
+    </>
   );
 }
