@@ -247,13 +247,41 @@ def start_attempt(quiz_id: int, student: User = Depends(require_role("student"))
     if not questions:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="This quiz has no questions yet")
 
+    quiz_payload = QuizForAttempt(
+        id=quiz.id, title=quiz.title, duration_minutes=quiz.duration_minutes,
+        questions=[QuestionForStudent.model_validate(q) for q in questions],
+    )
+    limit_seconds = quiz.duration_minutes * 60 if quiz.duration_minutes else None
+
     open_attempt = db.query(QuizAttempt).filter(
         QuizAttempt.quiz_id == quiz_id,
         QuizAttempt.student_id == student.id,
         QuizAttempt.submitted_at.is_(None),
     ).first()
     if open_attempt:
-        raise HTTPException(status.HTTP_409_CONFLICT, detail="You already have an open attempt for this quiz")
+        started = open_attempt.started_at
+        if started.tzinfo is None:
+            started = started.replace(tzinfo=timezone.utc)
+        elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+        if limit_seconds is None or elapsed <= limit_seconds + 30:
+            remaining = max(1, int(limit_seconds - elapsed)) if limit_seconds else None
+            return StartAttemptResponse(
+                attempt_id=open_attempt.id, quiz=quiz_payload,
+                started_at=open_attempt.started_at, resumed=True,
+                seconds_left=remaining if remaining is not None else 0,
+            )
+        # Open attempt timed out — auto-close it so a fresh attempt can start
+        score, total = 0.0, 0.0
+        saved = open_attempt.answers or {}
+        for q in questions:
+            total += q.marks
+            chosen = saved.get(str(q.id), saved.get(q.id))
+            if chosen is not None and chosen == q.correct_index:
+                score += q.marks
+        open_attempt.score = score
+        open_attempt.total_marks = total
+        open_attempt.submitted_at = datetime.now(timezone.utc)
+        db.commit()
 
     attempt = QuizAttempt(quiz_id=quiz_id, student_id=student.id, answers={})
     db.add(attempt)
@@ -262,11 +290,10 @@ def start_attempt(quiz_id: int, student: User = Depends(require_role("student"))
 
     return StartAttemptResponse(
         attempt_id=attempt.id,
-        quiz=QuizForAttempt(
-            id=quiz.id, title=quiz.title, duration_minutes=quiz.duration_minutes,
-            questions=[QuestionForStudent.model_validate(q) for q in questions],
-        ),
+        quiz=quiz_payload,
         started_at=attempt.started_at,
+        resumed=False,
+        seconds_left=limit_seconds if limit_seconds is not None else 0,
     )
 
 

@@ -117,6 +117,8 @@ class StartAttemptResponse(BaseModel):
     attempt_id: int
     quiz: QuizForAttempt
     started_at: datetime
+    resumed: bool = False
+    seconds_left: int
 
 
 class SubmitAttempt(BaseModel):
