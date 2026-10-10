@@ -61,15 +61,24 @@ export default function CourseBuilder() {
 
   const openNewLesson = () => setLessonModal({ ...emptyLesson, order_index: lessons.length });
   const saveLesson = async () => {
-    if (lessonModal.id) {
-      await client.put(`/lessons/${lessonModal.id}`, lessonModal);
-    } else {
-      await client.post(`/courses/${courseId}/lessons`, lessonModal);
+    if (!courseId) {
+      setError("Save the course details first, then add lessons.");
+      return;
     }
-    const { data } = await client.get(`/courses/${courseId}`);
-    setLessons(data.lessons);
-    setCourseStatus(data.status || courseStatus);
-    setLessonModal(null);
+    setError("");
+    try {
+      if (lessonModal.id) {
+        await client.put(`/lessons/${lessonModal.id}`, lessonModal);
+      } else {
+        await client.post(`/courses/${courseId}/lessons`, lessonModal);
+      }
+      const { data } = await client.get(`/courses/${courseId}`);
+      setLessons(data.lessons);
+      setCourseStatus(data.status || courseStatus);
+      setLessonModal(null);
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    }
   };
 
   const togglePublish = async () => {
@@ -92,6 +101,7 @@ export default function CourseBuilder() {
     if (!file) return;
     setUploading(true);
     setUploadProgress(0);
+    setError("");
     try {
       const body = new FormData();
       body.append("file", file);
@@ -101,14 +111,21 @@ export default function CourseBuilder() {
         },
       });
       setLessonModal((current) => ({ ...current, lesson_type: "video", content_url: data.url }));
+    } catch (err) {
+      setError(extractErrorMessage(err));
     } finally {
       setUploading(false);
     }
   };
 
   const deleteLesson = async (lessonId) => {
-    await client.delete(`/lessons/${lessonId}`);
-    setLessons(lessons.filter((l) => l.id !== lessonId));
+    setError("");
+    try {
+      await client.delete(`/lessons/${lessonId}`);
+      setLessons(lessons.filter((l) => l.id !== lessonId));
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    }
   };
 
   return (
@@ -233,6 +250,7 @@ export default function CourseBuilder() {
               </label>
             )}
             <Input label="Content URL" placeholder="https://... or uploaded video" value={lessonModal.content_url || ""} onChange={(e) => setLessonModal({ ...lessonModal, content_url: e.target.value })} />
+            {error && <p className="text-sm text-danger bg-danger-soft rounded-lg px-3 py-2">{error}</p>}
             <Button className="w-full" loading={uploading} onClick={saveLesson}>Save lesson</Button>
           </div>
         )}
