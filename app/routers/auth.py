@@ -199,7 +199,7 @@ def login(
     payload: UserLogin,
     request: Request,
     db: Session = Depends(get_db),
-    _: None = Depends(rate_limit("login", 10, 900)),
+    _: None = Depends(rate_limit("login", 30, 900)),
 ):
     user = db.query(User).filter(User.email == payload.email).first()
 
